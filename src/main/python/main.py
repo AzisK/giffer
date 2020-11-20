@@ -96,18 +96,21 @@ class MainWindow(QMainWindow):
 
 class LabelClickBorder(QLabel):
     pictureClicked = pyqtSignal(str)  # Can be other types (list, dict, object etc.)
+    STYLE = "border: 2px solid rgba(0, 0, 0, 0);"
+    STYLE_HIGHLIGHTED = "border: 2px solid black;"
 
     def __init__(self, image, *__args):
         super().__init__(*__args)
         self.setPixmap(image)
         self.highlighted = False
+        self.setStyleSheet(self.STYLE)
 
     def mousePressEvent(self, event):
         self.highlighted = not self.highlighted
         if self.highlighted:
-            self.setStyleSheet("border: 4px solid black")
+            self.setStyleSheet(self.STYLE_HIGHLIGHTED)
         else:
-            self.setStyleSheet("border: 0px")
+            self.setStyleSheet(self.STYLE)
 
         self.pictureClicked.emit("Mane spustelėjo!")
 
