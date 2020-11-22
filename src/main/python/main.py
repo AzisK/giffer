@@ -135,11 +135,11 @@ class LabelClickBorder(QLabel):
     STYLE = "border: 2px solid rgba(0, 0, 0, 0);"
     STYLE_HIGHLIGHTED = "border: 2px solid black;"
 
-    def __init__(self, pixmap, main_window, *__args):
+    def __init__(self, pixmap, main_window, height=100, *__args):
         super().__init__(*__args)
         self.main_window = main_window
         self.pixmap = pixmap.scaledToHeight(256)
-        self.setPixmap(self.pixmap.scaledToHeight(100))
+        self.setPixmap(self.pixmap.scaledToHeight(height))
         self.highlighted = False
         self.setStyleSheet(self.STYLE)
 
