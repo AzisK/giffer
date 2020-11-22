@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
 
         self.btn_add = QPushButton("Add Frames")
         self.btn_add.clicked.connect(self.add_frames)
-        vLayout.addWidget(self.btn)
+        vLayout.addWidget(self.btn_add)
 
         vLayout.addWidget(self.add_video_frames_area())
 
