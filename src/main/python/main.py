@@ -1,11 +1,12 @@
 import io
 import sys
+from shutil import copyfile
 
 from PIL import Image
 from PyQt5.QtCore import pyqtSignal, QBuffer, Qt
-from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie
+from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxLayout, QPushButton, QVBoxLayout, \
-    QWidget, QFileDialog, QScrollArea
+    QWidget, QFileDialog, QScrollArea, QAction, QToolBar
 from cv2 import CAP_PROP_POS_MSEC, VideoCapture
 from fbs_runtime.application_context.PyQt5 import ApplicationContext, cached_property
 
@@ -23,6 +24,10 @@ class AppContext(ApplicationContext):           # 1. Subclass ApplicationContext
     def img_corgo(self):
         return QImage(self.get_resource('images/Corgo.jpg'))
 
+    @cached_property
+    def save_png(self):
+        return self.get_resource('images/Save.png')
+
 
 class MainWindow(QMainWindow):
     def __init__(self, ctx):
@@ -35,11 +40,26 @@ class MainWindow(QMainWindow):
         self.selected_images = []
         # self.showMaximized()
 
+    def file_save(self):
+        name = QFileDialog.getSaveFileName(self, 'Save File')[0]
+        name = name + '.gif' if not name.endswith('.gif') else name
+        copyfile('gifs/image.gif', name)
+
     def init_ui(self):
         self.add_shortcuts()
 
-        widget = QWidget()
         vLayout = QVBoxLayout()
+        vLayout.setContentsMargins(0, 0, 0, 0)
+        widget = QWidget()
+        widget.setLayout(vLayout)
+
+        toolBar = QToolBar()
+        vLayout.addWidget(toolBar)
+
+        save_file_action = QAction(QIcon(self.ctx.save_png), "Save", self)
+        save_file_action.setStatusTip("Save GIF")
+        save_file_action.triggered.connect(self.file_save)
+        toolBar.addAction(save_file_action)
 
         self.main_view = self.add_corgo()
         vLayout.addWidget(self.main_view)
@@ -64,7 +84,6 @@ class MainWindow(QMainWindow):
 
         vLayout.addWidget(self.add_video_frames_area())
 
-        widget.setLayout(vLayout)
         self.setCentralWidget(widget)
 
     def add_video_frames_area(self):
