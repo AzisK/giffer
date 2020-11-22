@@ -49,9 +49,7 @@ class MainWindow(QMainWindow):
         vLayout.addWidget(self.btn_generate)
 
         vLayout.addWidget(self.add_selected_frames_area())
-        self.select_frames_layout.addWidget(self.add_corgo())
-        self.select_frames_layout.addWidget(self.add_corgo())
-        self.select_frames_layout.addWidget(self.add_corgo())
+        self.select_frames_layout.addWidget(self.add_corgo_frame())
 
         buttons_layout = QHBoxLayout()
         self.btn = QPushButton("Select Source")
@@ -96,6 +94,10 @@ class MainWindow(QMainWindow):
         label.setScaledContents(True)
 
         return label
+
+    def add_corgo_frame(self, height=256):
+        pixmap = QPixmap.fromImage(self.ctx.img_corgo)
+        return LabelClickBorder(pixmap, self, height)
 
     def add_shortcuts(self):
         self.quit_sc = QShortcut(QKeySequence('Ctrl+W'), self)
