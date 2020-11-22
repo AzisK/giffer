@@ -173,7 +173,7 @@ def extract_images(pathIn):
 def cv_image_to_qimage(cv_img):
     height, width, channel = cv_img.shape
     bytes_per_line = 3 * width
-    q_img = QImage(cv_img.data, width, height, bytes_per_line, QImage.Format_RGB888)
+    q_img = QImage(cv_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
     return q_img
 
 
