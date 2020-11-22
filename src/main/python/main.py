@@ -1,10 +1,12 @@
+import io
 import sys
 
-from cv2 import CAP_PROP_POS_MSEC, VideoCapture
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QPixmap, QImage, QKeySequence
+from PIL import Image
+from PyQt5.QtCore import pyqtSignal, QBuffer
+from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxLayout, QPushButton, QVBoxLayout, \
     QWidget, QFileDialog
+from cv2 import CAP_PROP_POS_MSEC, VideoCapture
 from fbs_runtime.application_context.PyQt5 import ApplicationContext, cached_property
 
 
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.title)
 
         self.init_ui()
+        self.selected_images = []
         # self.showMaximized()
 
     def init_ui(self):
@@ -38,8 +41,8 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         vLayout = QVBoxLayout()
 
-        corgo = self.add_corgo()
-        vLayout.addWidget(corgo)
+        self.main_view = self.add_corgo()
+        vLayout.addWidget(self.main_view)
 
         layout = QHBoxLayout()
         layout.addWidget(QPushButton('Left'))
@@ -56,6 +59,10 @@ class MainWindow(QMainWindow):
         self.btn = QPushButton("Select Video")
         self.btn.clicked.connect(self.get_files)
         vLayout.addWidget(self.btn)
+
+        self.btn_add = QPushButton("Generate GIF")
+        self.btn_add.clicked.connect(self.generate_gif)
+        vLayout.addWidget(self.btn_add)
 
         self.video_frames_layout = QHBoxLayout()
         vLayout.addLayout(self.video_frames_layout)
@@ -84,10 +91,21 @@ class MainWindow(QMainWindow):
             file_name = dlg.selectedFiles()[0]
             images = extract_images(file_name)
             for image in images[:3]:
-                pixmap = QPixmap.fromImage(image).scaledToHeight(128)
+                pixmap = QPixmap.fromImage(image)
                 picture = LabelClickBorder(pixmap, self)
                 picture.pictureClicked.connect(self.get_in_main)
                 self.video_frames_layout.addWidget(picture)
+
+    def generate_gif(self):
+        fp = "gifs/image.gif"
+
+        # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
+        img, *imgs = [qpixmap_to_pil(i) for i in self.selected_images]
+
+        img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=320, loop=0)
+        gif = QMovie(fp)
+        self.main_view.setMovie(gif)
+        gif.start()
 
     @staticmethod
     def get_in_main(message):
@@ -99,9 +117,11 @@ class LabelClickBorder(QLabel):
     STYLE = "border: 2px solid rgba(0, 0, 0, 0);"
     STYLE_HIGHLIGHTED = "border: 2px solid black;"
 
-    def __init__(self, image, *__args):
+    def __init__(self, pixmap, main_window, *__args):
         super().__init__(*__args)
-        self.setPixmap(image)
+        self.main_window = main_window
+        self.pixmap = pixmap.scaledToHeight(256)
+        self.setPixmap(self.pixmap.scaledToHeight(128))
         self.highlighted = False
         self.setStyleSheet(self.STYLE)
 
@@ -109,6 +129,7 @@ class LabelClickBorder(QLabel):
         self.highlighted = not self.highlighted
         if self.highlighted:
             self.setStyleSheet(self.STYLE_HIGHLIGHTED)
+            self.main_window.selected_images.append(self.pixmap)
         else:
             self.setStyleSheet(self.STYLE)
 
@@ -125,16 +146,24 @@ def extract_images(pathIn):
         success, image = vidcap.read()
         if image is None:
             return images
-        images.append(to_q_image(image))
+        images.append(cv_image_to_qimage(image))
         count = count + 1
     return images
 
 
-def to_q_image(cv_img):
+def cv_image_to_qimage(cv_img):
     height, width, channel = cv_img.shape
     bytes_per_line = 3 * width
     q_img = QImage(cv_img.data, width, height, bytes_per_line, QImage.Format_RGB888)
     return q_img
+
+
+def qpixmap_to_pil(qpixmap):
+    buffer = QBuffer()
+    buffer.open(QBuffer.ReadWrite)
+    qpixmap.save(buffer, "PNG")
+    pil_im = Image.open(io.BytesIO(buffer.data()))
+    return pil_im
 
 
 if __name__ == '__main__':
