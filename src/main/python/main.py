@@ -58,13 +58,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(vLayout)
 
-        toolBar = QToolBar()
-        vLayout.addWidget(toolBar)
-
-        save_file_action = QAction(QIcon(self.ctx.save_png), "Save", self)
-        save_file_action.setStatusTip("Save GIF")
-        save_file_action.triggered.connect(self.file_save)
-        toolBar.addAction(save_file_action)
+        vLayout.addWidget(self.add_toolbar())
 
         self.main_view = self.add_corgo()
         vLayout.addWidget(self.main_view)
@@ -90,6 +84,14 @@ class MainWindow(QMainWindow):
         vLayout.addWidget(self.add_video_frames_area())
 
         self.setCentralWidget(widget)
+
+    def add_toolbar(self):
+        toolBar = QToolBar()
+        save_file_action = QAction(QIcon(self.ctx.save_png), "Save", self)
+        save_file_action.setStatusTip("Save GIF")
+        save_file_action.triggered.connect(self.file_save)
+        toolBar.addAction(save_file_action)
+        return toolBar
 
     def add_video_frames_area(self):
         scroll = QScrollArea()
