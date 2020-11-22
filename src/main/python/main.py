@@ -63,23 +63,26 @@ class MainWindow(QMainWindow):
         self.main_view = self.add_corgo()
         vLayout.addWidget(self.main_view)
 
+        buttons_layout1 = QHBoxLayout()
         self.btn_generate = QPushButton("Generate GIF")
         self.btn_generate.clicked.connect(self.generate_gif)
-        vLayout.addWidget(self.btn_generate)
+        buttons_layout1.addWidget(self.btn_generate)
+        self.btn_remove = QPushButton("Remove Unselected")
+        self.btn_remove.clicked.connect(self.remove_unselected)
+        buttons_layout1.addWidget(self.btn_remove)
+        vLayout.addLayout(buttons_layout1)
 
         vLayout.addWidget(self.add_selected_frames_area())
         self.select_frames_layout.addWidget(self.add_corgo_frame())
 
-        buttons_layout = QHBoxLayout()
+        buttons_layout2 = QHBoxLayout()
         self.btn = QPushButton("Select Source")
         self.btn.clicked.connect(self.get_files)
-        buttons_layout.addWidget(self.btn)
-
+        buttons_layout2.addWidget(self.btn)
         self.btn_add = QPushButton("Add Frames")
         self.btn_add.clicked.connect(self.add_frames)
-        buttons_layout.addWidget(self.btn_add)
-
-        vLayout.addLayout(buttons_layout)
+        buttons_layout2.addWidget(self.btn_add)
+        vLayout.addLayout(buttons_layout2)
 
         vLayout.addWidget(self.add_video_frames_area())
 
