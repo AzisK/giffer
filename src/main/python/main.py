@@ -44,11 +44,6 @@ class MainWindow(QMainWindow):
         self.main_view = self.add_corgo()
         vLayout.addWidget(self.main_view)
 
-        layout = QHBoxLayout()
-        layout.addWidget(QPushButton('Left'))
-        layout.addWidget(QPushButton('Center'))
-        layout.addWidget(QPushButton('Right'))
-        vLayout.addLayout(layout)
 
         gifs_layout = QHBoxLayout()
         gifs_layout.addWidget(self.add_corgo())
@@ -56,13 +51,16 @@ class MainWindow(QMainWindow):
         gifs_layout.addWidget(self.add_corgo())
         vLayout.addLayout(gifs_layout)
 
-        self.btn = QPushButton("Select Video")
+        self.btn_generate = QPushButton("Generate GIF")
+        self.btn_generate.clicked.connect(self.generate_gif)
+        vLayout.addWidget(self.btn_generate)
+        self.btn = QPushButton("Select Source")
         self.btn.clicked.connect(self.get_files)
         vLayout.addWidget(self.btn)
 
-        self.btn_add = QPushButton("Generate GIF")
-        self.btn_add.clicked.connect(self.generate_gif)
-        vLayout.addWidget(self.btn_add)
+        self.btn_add = QPushButton("Add Frames")
+        self.btn_add.clicked.connect(self.add_frames)
+        vLayout.addWidget(self.btn)
 
         vLayout.addWidget(self.add_video_frames_area())
 
