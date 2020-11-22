@@ -53,13 +53,16 @@ class MainWindow(QMainWindow):
         self.select_frames_layout.addWidget(self.add_corgo())
         self.select_frames_layout.addWidget(self.add_corgo())
 
+        buttons_layout = QHBoxLayout()
         self.btn = QPushButton("Select Source")
         self.btn.clicked.connect(self.get_files)
-        vLayout.addWidget(self.btn)
+        buttons_layout.addWidget(self.btn)
 
         self.btn_add = QPushButton("Add Frames")
         self.btn_add.clicked.connect(self.add_frames)
-        vLayout.addWidget(self.btn_add)
+        buttons_layout.addWidget(self.btn_add)
+
+        vLayout.addLayout(buttons_layout)
 
         vLayout.addWidget(self.add_video_frames_area())
 
