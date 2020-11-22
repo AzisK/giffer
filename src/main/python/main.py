@@ -89,8 +89,11 @@ class MainWindow(QMainWindow):
         return label
 
     def add_shortcuts(self):
-        self.quitSc = QShortcut(QKeySequence('Ctrl+W'), self)
-        self.quitSc.activated.connect(QApplication.instance().quit)
+        self.quit_sc = QShortcut(QKeySequence('Ctrl+W'), self)
+        self.quit_sc.activated.connect(QApplication.instance().quit)
+
+        self.copy_frame = QShortcut(QKeySequence('Ctrl+C'), self)
+        self.copy_frame.activated.connect(self.copy_last_highlighted)
 
     def get_files(self):
         dlg = QFileDialog()
@@ -120,6 +123,12 @@ class MainWindow(QMainWindow):
     @staticmethod
     def get_in_main(message):
         print(message, "Dabar esu Main viduj!:)")
+
+    def copy_last_highlighted(self):
+        last = self.selected_images[-1]
+        widget = LabelClickBorder(last, self)
+        self.video_frames_layout.addWidget(widget)
+        print(self.video_frames_layout.count())
 
 
 class LabelClickBorder(QLabel):
