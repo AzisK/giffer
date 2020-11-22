@@ -44,16 +44,16 @@ class MainWindow(QMainWindow):
         self.main_view = self.add_corgo()
         vLayout.addWidget(self.main_view)
 
-
-        gifs_layout = QHBoxLayout()
-        gifs_layout.addWidget(self.add_corgo())
-        gifs_layout.addWidget(self.add_corgo())
-        gifs_layout.addWidget(self.add_corgo())
-        vLayout.addLayout(gifs_layout)
-
         self.btn_generate = QPushButton("Generate GIF")
         self.btn_generate.clicked.connect(self.generate_gif)
         vLayout.addWidget(self.btn_generate)
+
+        vLayout.addWidget(self.add_selected_frames_area())
+
+        select_frames_layout.addWidget(self.add_corgo())
+        select_frames_layout.addWidget(self.add_corgo())
+        select_frames_layout.addWidget(self.add_corgo())
+
         self.btn = QPushButton("Select Source")
         self.btn.clicked.connect(self.get_files)
         vLayout.addWidget(self.btn)
@@ -75,6 +75,16 @@ class MainWindow(QMainWindow):
         scroll.setFixedHeight(140)
         scroll.setWidget(content)
         self.video_frames_layout = QHBoxLayout(content)
+        return scroll
+
+    def add_selected_frames_area(self):
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(1)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        content = QWidget()
+        scroll.setFixedHeight(260)
+        scroll.setWidget(content)
+        self.select_frames_layout = QHBoxLayout(content)
         return scroll
 
     def add_corgo(self):
