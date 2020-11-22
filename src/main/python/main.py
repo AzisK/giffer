@@ -127,7 +127,6 @@ class MainWindow(QMainWindow):
         last = self.selected_images[-1]
         widget = LabelClickBorder(last, self)
         self.video_frames_layout.addWidget(widget)
-        print(self.video_frames_layout.count())
 
 
 class LabelClickBorder(QLabel):
