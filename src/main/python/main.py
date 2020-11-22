@@ -64,6 +64,13 @@ class MainWindow(QMainWindow):
         self.btn_add.clicked.connect(self.generate_gif)
         vLayout.addWidget(self.btn_add)
 
+        scroll = self.add_video_frames_area()
+        vLayout.addWidget(scroll)
+
+        widget.setLayout(vLayout)
+        self.setCentralWidget(widget)
+
+    def add_video_frames_area(self):
         scroll = QScrollArea()
         scroll.setWidgetResizable(1)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -71,10 +78,7 @@ class MainWindow(QMainWindow):
         scroll.setFixedHeight(140)
         scroll.setWidget(content)
         self.video_frames_layout = QHBoxLayout(content)
-        vLayout.addWidget(scroll)
-
-        widget.setLayout(vLayout)
-        self.setCentralWidget(widget)
+        return scroll
 
     def add_corgo(self):
         label = QLabel()
