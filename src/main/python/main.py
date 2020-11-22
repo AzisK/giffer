@@ -28,6 +28,10 @@ class AppContext(ApplicationContext):           # 1. Subclass ApplicationContext
     def save_png(self):
         return self.get_resource('images/Save.png')
 
+    @cached_property
+    def working_gif(self):
+        return self.get_resource('work/working_gif.gif')
+
 
 class MainWindow(QMainWindow):
     def __init__(self, ctx):
@@ -43,7 +47,7 @@ class MainWindow(QMainWindow):
     def file_save(self):
         name = QFileDialog.getSaveFileName(self, 'Save File')[0]
         name = name + '.gif' if not name.endswith('.gif') else name
-        copyfile('gifs/image.gif', name)
+        copyfile(self.ctx.working_gif, name)
 
     def init_ui(self):
         self.add_shortcuts()
@@ -145,7 +149,7 @@ class MainWindow(QMainWindow):
             self.select_frames_layout.addWidget(w)
 
     def generate_gif(self):
-        fp = "gifs/image.gif"
+        fp = self.ctx.working_gif
 
         cnt = self.select_frames_layout.count()
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
