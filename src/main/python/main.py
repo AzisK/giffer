@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
     def add_frames(self):
         widgets = [LabelClickBorder(i, self, 256) for i in self.selected_images]
         for w in widgets:
-            self.select_frames_layout.addWidget(widget)
+            self.select_frames_layout.addWidget(w)
 
     def generate_gif(self):
         fp = "gifs/image.gif"
