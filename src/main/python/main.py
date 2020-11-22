@@ -64,8 +64,7 @@ class MainWindow(QMainWindow):
         self.btn_add.clicked.connect(self.generate_gif)
         vLayout.addWidget(self.btn_add)
 
-        scroll = self.add_video_frames_area()
-        vLayout.addWidget(scroll)
+        vLayout.addWidget(self.add_video_frames_area())
 
         widget.setLayout(vLayout)
         self.setCentralWidget(widget)
