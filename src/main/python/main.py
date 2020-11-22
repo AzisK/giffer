@@ -46,8 +46,9 @@ class MainWindow(QMainWindow):
 
     def file_save(self):
         name = QFileDialog.getSaveFileName(self, 'Save File')[0]
-        name = name + '.gif' if not name.endswith('.gif') else name
-        copyfile(self.ctx.working_gif, name)
+        if name:
+            name = name + '.gif' if not name.endswith('.gif') else name
+            copyfile(self.ctx.working_gif, name)
 
     def init_ui(self):
         self.add_shortcuts()
