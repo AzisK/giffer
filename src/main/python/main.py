@@ -41,7 +41,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.title)
 
         self.init_ui()
-        self.selected_images = []
         # self.showMaximized()
 
     def file_save(self):
@@ -207,7 +206,6 @@ class LabelVideoFrame(QLabel):
         self.highlighted = not self.highlighted
         if self.highlighted:
             self.setStyleSheet(self.STYLE_HIGHLIGHTED)
-            # self.main_window.selected_images.append(self.original_pixmap)
         else:
             self.setStyleSheet(self.STYLE)
 
