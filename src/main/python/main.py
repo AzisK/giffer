@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
         self.quit_sc.activated.connect(QApplication.instance().quit)
 
         self.copy_frame = QShortcut(QKeySequence('Ctrl+C'), self)
-        self.copy_frame.activated.connect(self.copy_last_highlighted)
+        self.copy_frame.activated.connect(self.copy_highlighted)
 
     def get_files(self):
         dlg = QFileDialog()
@@ -165,6 +165,11 @@ class MainWindow(QMainWindow):
         self.main_view.setMovie(gif)
         gif.start()
 
+    def copy_highlighted(self):
+        widgets = [LabelVideoFrame(i.original_pixmap, self) for i in self.layout_children(self.video_frames_layout) if i.highlighted]
+        for w in widgets:
+            self.video_frames_layout.addWidget(w)
+
     def remove_unselected(self):
         widgets = [i for i in self.layout_children(self.select_frames_layout) if not i.highlighted]
         for w in widgets:
@@ -174,10 +179,6 @@ class MainWindow(QMainWindow):
     def get_in_main(message):
         print(message, "Dabar esu Main viduj!:)")
 
-    def copy_last_highlighted(self):
-        last = self.selected_images[-1]
-        widget = LabelClickBorder(last, self)
-        self.video_frames_layout.addWidget(widget)
     @staticmethod
     def layout_children(layout):
         cnt = layout.count()
