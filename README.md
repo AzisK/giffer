@@ -10,5 +10,7 @@ Activate it `source .venv/bin/activate`
 
 Install requirements with `pip install -r requirements.txt`
 
+To deactivate environment `deactivate`
+
 ## Build
 Build app with `fbs freeze`
