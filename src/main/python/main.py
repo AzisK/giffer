@@ -49,10 +49,9 @@ class MainWindow(QMainWindow):
         vLayout.addWidget(self.btn_generate)
 
         vLayout.addWidget(self.add_selected_frames_area())
-
-        select_frames_layout.addWidget(self.add_corgo())
-        select_frames_layout.addWidget(self.add_corgo())
-        select_frames_layout.addWidget(self.add_corgo())
+        self.select_frames_layout.addWidget(self.add_corgo())
+        self.select_frames_layout.addWidget(self.add_corgo())
+        self.select_frames_layout.addWidget(self.add_corgo())
 
         self.btn = QPushButton("Select Source")
         self.btn.clicked.connect(self.get_files)
