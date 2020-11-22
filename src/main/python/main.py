@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
 
     def add_corgo_frame(self, height=256):
         pixmap = QPixmap.fromImage(self.ctx.img_corgo)
-        return LabelClickBorder(pixmap, self, height)
+        return LabelSelected(pixmap, self, height)
 
     def add_shortcuts(self):
         self.quit_sc = QShortcut(QKeySequence('Ctrl+W'), self)
@@ -145,21 +145,20 @@ class MainWindow(QMainWindow):
             images = extract_images(file_name)
             for image in images:
                 pixmap = QPixmap.fromImage(image)
-                picture = LabelClickBorder(pixmap, self)
+                picture = LabelVideoFrame(pixmap, self)
                 picture.pictureClicked.connect(self.get_in_main)
                 self.video_frames_layout.addWidget(picture)
 
     def add_frames(self):
-        widgets = [LabelClickBorder(i, self, 256) for i in self.selected_images]
+        widgets = [LabelSelected(i.original_pixmap, self, 256) for i in self.layout_children(self.video_frames_layout) if i.highlighted]
         for w in widgets:
             self.select_frames_layout.addWidget(w)
 
     def generate_gif(self):
         fp = self.ctx.working_gif
 
-        cnt = self.select_frames_layout.count()
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
-        img, *imgs = [qpixmap_to_pil(self.select_frames_layout.itemAt(i).widget().original_pixmap) for i in range(cnt)]
+        img, *imgs = [qpixmap_to_pil(i.original_pixmap) for i in self.layout_children(self.select_frames_layout) if i.highlighted]
 
         img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=320, loop=0)
         gif = QMovie(fp)
@@ -185,28 +184,41 @@ class MainWindow(QMainWindow):
         return [layout.itemAt(i).widget() for i in range(cnt)]
 
 
-class LabelClickBorder(QLabel):
+class LabelVideoFrame(QLabel):
     pictureClicked = pyqtSignal(str)  # Can be other types (list, dict, object etc.)
     STYLE = "border: 2px solid rgba(0, 0, 0, 0);"
     STYLE_HIGHLIGHTED = "border: 2px solid black;"
+    INITIAL_STATE = False
+
+    @property
+    def initial_style(self):
+        return self.STYLE
 
     def __init__(self, pixmap, main_window, height=100, *__args):
         super().__init__(*__args)
         self.main_window = main_window
         self.original_pixmap = pixmap.scaledToHeight(256)
         self.setPixmap(self.original_pixmap.scaledToHeight(height))
-        self.highlighted = False
-        self.setStyleSheet(self.STYLE)
+        self.highlighted = self.INITIAL_STATE
+        self.setStyleSheet(self.initial_style)
 
     def mousePressEvent(self, event):
         self.highlighted = not self.highlighted
         if self.highlighted:
             self.setStyleSheet(self.STYLE_HIGHLIGHTED)
-            self.main_window.selected_images.append(self.original_pixmap)
+            # self.main_window.selected_images.append(self.original_pixmap)
         else:
             self.setStyleSheet(self.STYLE)
 
         self.pictureClicked.emit("Mane spustelėjo!")
+
+
+class LabelSelected(LabelVideoFrame):
+    INITIAL_STATE = True
+
+    @property
+    def initial_style(self):
+        return self.STYLE_HIGHLIGHTED
 
 
 def extract_images(pathIn):
