@@ -116,6 +116,11 @@ class MainWindow(QMainWindow):
                 picture.pictureClicked.connect(self.get_in_main)
                 self.video_frames_layout.addWidget(picture)
 
+    def add_frames(self):
+        widgets = [LabelClickBorder(i, self, 256) for i in self.selected_images]
+        for w in widgets:
+            self.select_frames_layout.addWidget(widget)
+
     def generate_gif(self):
         fp = "gifs/image.gif"
 
