@@ -166,6 +166,11 @@ class MainWindow(QMainWindow):
         self.main_view.setMovie(gif)
         gif.start()
 
+    def remove_unselected(self):
+        widgets = [i for i in self.layout_children(self.select_frames_layout) if not i.highlighted]
+        for w in widgets:
+            w.deleteLater()
+
     @staticmethod
     def get_in_main(message):
         print(message, "Dabar esu Main viduj!:)")
