@@ -2,10 +2,10 @@ import io
 import sys
 
 from PIL import Image
-from PyQt5.QtCore import pyqtSignal, QBuffer
+from PyQt5.QtCore import pyqtSignal, QBuffer, Qt
 from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxLayout, QPushButton, QVBoxLayout, \
-    QWidget, QFileDialog
+    QWidget, QFileDialog, QScrollArea
 from cv2 import CAP_PROP_POS_MSEC, VideoCapture
 from fbs_runtime.application_context.PyQt5 import ApplicationContext, cached_property
 
@@ -64,8 +64,12 @@ class MainWindow(QMainWindow):
         self.btn_add.clicked.connect(self.generate_gif)
         vLayout.addWidget(self.btn_add)
 
-        self.video_frames_layout = QHBoxLayout()
-        vLayout.addLayout(self.video_frames_layout)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(1)
+        content = QWidget()
+        scroll.setWidget(content)
+        self.video_frames_layout = QHBoxLayout(content)
+        vLayout.addWidget(scroll)
 
         widget.setLayout(vLayout)
         self.setCentralWidget(widget)
@@ -90,7 +94,7 @@ class MainWindow(QMainWindow):
         if dlg.exec_():
             file_name = dlg.selectedFiles()[0]
             images = extract_images(file_name)
-            for image in images[:3]:
+            for image in images:
                 pixmap = QPixmap.fromImage(image)
                 picture = LabelClickBorder(pixmap, self)
                 picture.pictureClicked.connect(self.get_in_main)
