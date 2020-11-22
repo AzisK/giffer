@@ -128,8 +128,9 @@ class MainWindow(QMainWindow):
     def generate_gif(self):
         fp = "gifs/image.gif"
 
+        cnt = self.select_frames_layout.count()
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
-        img, *imgs = [qpixmap_to_pil(i) for i in self.selected_images]
+        img, *imgs = [qpixmap_to_pil(self.select_frames_layout.itemAt(i).widget().original_pixmap) for i in range(cnt)]
 
         img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=320, loop=0)
         gif = QMovie(fp)
@@ -154,8 +155,8 @@ class LabelClickBorder(QLabel):
     def __init__(self, pixmap, main_window, height=100, *__args):
         super().__init__(*__args)
         self.main_window = main_window
-        self.pixmap = pixmap.scaledToHeight(256)
-        self.setPixmap(self.pixmap.scaledToHeight(height))
+        self.original_pixmap = pixmap.scaledToHeight(256)
+        self.setPixmap(self.original_pixmap.scaledToHeight(height))
         self.highlighted = False
         self.setStyleSheet(self.STYLE)
 
@@ -163,7 +164,7 @@ class LabelClickBorder(QLabel):
         self.highlighted = not self.highlighted
         if self.highlighted:
             self.setStyleSheet(self.STYLE_HIGHLIGHTED)
-            self.main_window.selected_images.append(self.pixmap)
+            self.main_window.selected_images.append(self.original_pixmap)
         else:
             self.setStyleSheet(self.STYLE)
 
