@@ -66,7 +66,9 @@ class MainWindow(QMainWindow):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(1)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         content = QWidget()
+        scroll.setFixedHeight(140)
         scroll.setWidget(content)
         self.video_frames_layout = QHBoxLayout(content)
         vLayout.addWidget(scroll)
@@ -125,7 +127,7 @@ class LabelClickBorder(QLabel):
         super().__init__(*__args)
         self.main_window = main_window
         self.pixmap = pixmap.scaledToHeight(256)
-        self.setPixmap(self.pixmap.scaledToHeight(128))
+        self.setPixmap(self.pixmap.scaledToHeight(100))
         self.highlighted = False
         self.setStyleSheet(self.STYLE)
 
