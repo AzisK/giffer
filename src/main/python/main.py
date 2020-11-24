@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.title)
 
         self.init_ui()
-        # self.showMaximized()
+        self.showMaximized()
 
     def file_save(self):
         name = QFileDialog.getSaveFileName(self, 'Save File')[0]
@@ -54,46 +54,63 @@ class MainWindow(QMainWindow):
 
         vLayout = QVBoxLayout()
         vLayout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(1)
         widget = QWidget()
+        scroll.setWidget(widget)
+
         widget.setLayout(vLayout)
 
         vLayout.addWidget(self.add_toolbar())
 
-        self.main_view = self.add_corgo()
-        vLayout.addWidget(self.main_view)
+        self.gif_view = self.setup_gif_view()
+        self.add_corgo()
+        vLayout.addWidget(self.gif_view)
 
-        buttons_layout1 = QHBoxLayout()
-        self.btn_generate = QPushButton("Generate GIF")
-        self.btn_generate.clicked.connect(self.generate_gif)
-        buttons_layout1.addWidget(self.btn_generate)
-        self.btn_remove = QPushButton("Remove Unselected")
-        self.btn_remove.clicked.connect(self.remove_unselected)
-        buttons_layout1.addWidget(self.btn_remove)
-        vLayout.addLayout(buttons_layout1)
+        vLayout.addLayout(self.add_gif_buttons())
 
         vLayout.addWidget(self.add_selected_frames_area())
-        self.select_frames_layout.addWidget(self.add_corgo_frame())
 
-        buttons_layout2 = QHBoxLayout()
-        self.btn = QPushButton("Select Source")
-        self.btn.clicked.connect(self.get_files)
-        buttons_layout2.addWidget(self.btn)
-        self.btn_add = QPushButton("Add Frames")
-        self.btn_add.clicked.connect(self.add_frames)
-        buttons_layout2.addWidget(self.btn_add)
-        vLayout.addLayout(buttons_layout2)
+        vLayout.addLayout(self.add_frame_buttons())
 
         vLayout.addWidget(self.add_video_frames_area())
 
-        self.setCentralWidget(widget)
+        self.setCentralWidget(scroll)
 
     def add_toolbar(self):
-        toolBar = QToolBar()
+        toolbar = QToolBar()
         save_file_action = QAction(QIcon(self.ctx.save_png), "Save", self)
         save_file_action.setStatusTip("Save GIF")
         save_file_action.triggered.connect(self.file_save)
-        toolBar.addAction(save_file_action)
-        return toolBar
+        toolbar.addAction(save_file_action)
+        return toolbar
+
+    def add_gif_buttons(self):
+        layout = QHBoxLayout()
+
+        self.btn_generate = QPushButton("Generate GIF")
+        self.btn_generate.clicked.connect(self.generate_gif)
+        layout.addWidget(self.btn_generate)
+
+        self.btn_remove = QPushButton("Remove Unselected")
+        self.btn_remove.clicked.connect(self.remove_unselected)
+        layout.addWidget(self.btn_remove)
+
+        return layout
+
+    def add_frame_buttons(self):
+        layout = QHBoxLayout()
+
+        self.btn = QPushButton("Select Source")
+        self.btn.clicked.connect(self.get_files)
+        layout.addWidget(self.btn)
+
+        self.btn_add = QPushButton("Add Frames")
+        self.btn_add.clicked.connect(self.add_frames)
+        layout.addWidget(self.btn_add)
+
+        return layout
 
     def add_video_frames_area(self):
         scroll = QScrollArea()
@@ -110,22 +127,21 @@ class MainWindow(QMainWindow):
         scroll.setWidgetResizable(1)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         content = QWidget()
-        scroll.setFixedHeight(260)
+        scroll.setFixedHeight(198)
         scroll.setWidget(content)
         self.select_frames_layout = QHBoxLayout(content)
+        self.select_frames_layout.setContentsMargins(0, 0, 0, 0)
+        self.select_frames_layout.setAlignment(Qt.AlignLeft)
         return scroll
 
-    def add_corgo(self):
+    def setup_gif_view(self):
         label = QLabel()
-        pixmap = QPixmap.fromImage(self.ctx.img_corgo)
-        label.setPixmap(pixmap)
-        label.setScaledContents(True)
-
+        label.setAlignment(Qt.AlignCenter)
         return label
 
-    def add_corgo_frame(self, height=256):
+    def add_corgo(self):
         pixmap = QPixmap.fromImage(self.ctx.img_corgo)
-        return LabelSelected(pixmap, self, height)
+        self.gif_view.setPixmap(pixmap.scaledToHeight(384))
 
     def add_shortcuts(self):
         self.quit_sc = QShortcut(QKeySequence('Ctrl+W'), self)
@@ -149,7 +165,7 @@ class MainWindow(QMainWindow):
                 self.video_frames_layout.addWidget(picture)
 
     def add_frames(self):
-        widgets = [LabelSelected(i.original_pixmap, self, 256) for i in self.layout_children(self.video_frames_layout) if i.highlighted]
+        widgets = [LabelSelected(i.original_pixmap, self, 192) for i in self.layout_children(self.video_frames_layout) if i.highlighted]
         for w in widgets:
             self.select_frames_layout.addWidget(w)
 
@@ -157,11 +173,12 @@ class MainWindow(QMainWindow):
         fp = self.ctx.working_gif
 
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
-        img, *imgs = [qpixmap_to_pil(i.original_pixmap) for i in self.layout_children(self.select_frames_layout) if i.highlighted]
+        pixmaps = [i.original_pixmap for i in self.layout_children(self.select_frames_layout) if i.highlighted]
+        img, *imgs = [qpixmap_to_pil(i.scaledToHeight(384)) for i in pixmaps]
 
         img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=320, loop=0)
         gif = QMovie(fp)
-        self.main_view.setMovie(gif)
+        self.gif_view.setMovie(gif)
         gif.start()
 
     def copy_highlighted(self):
@@ -197,7 +214,7 @@ class LabelVideoFrame(QLabel):
     def __init__(self, pixmap, main_window, height=100, *__args):
         super().__init__(*__args)
         self.main_window = main_window
-        self.original_pixmap = pixmap.scaledToHeight(256)
+        self.original_pixmap = pixmap
         self.setPixmap(self.original_pixmap.scaledToHeight(height))
         self.highlighted = self.INITIAL_STATE
         self.setStyleSheet(self.initial_style)
