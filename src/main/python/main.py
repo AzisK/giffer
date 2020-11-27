@@ -6,7 +6,7 @@ from PIL import Image
 from PyQt5.QtCore import pyqtSignal, QBuffer, Qt
 from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxLayout, QPushButton, QVBoxLayout, \
-    QWidget, QFileDialog, QScrollArea, QAction, QToolBar
+    QWidget, QFileDialog, QScrollArea, QAction, QToolBar, QSlider
 from cv2 import CAP_PROP_POS_MSEC, VideoCapture
 from fbs_runtime.application_context.PyQt5 import ApplicationContext, cached_property
 
@@ -97,7 +97,49 @@ class MainWindow(QMainWindow):
         self.btn_remove.clicked.connect(self.remove_unselected)
         layout.addWidget(self.btn_remove)
 
+        height = QLabel('Height', self)
+        height.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        height.setMaximumWidth(60)
+        layout.addWidget(height)
+
+        sld = QSlider(Qt.Horizontal, self)
+        sld.setRange(128, 1024)
+        sld.setValue(384)
+        sld.setMaximumWidth(160)
+        sld.valueChanged.connect(self.update_height)
+        layout.addWidget(sld)
+
+        self.height = QLabel('384', self)
+        self.height.setAlignment(Qt.AlignCenter)
+        self.height.setMaximumWidth(80)
+        layout.addWidget(self.height)
+
+        delay = QLabel('Delay', self)
+        delay.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        delay.setMaximumWidth(60)
+        layout.addWidget(delay)
+
+        sld = QSlider(Qt.Horizontal, self)
+        sld.setRange(100, 1000)
+        sld.setValue(200)
+        sld.setMaximumWidth(160)
+        sld.valueChanged.connect(self.update_delay)
+        layout.addWidget(sld)
+
+        self.delay = QLabel('200', self)
+        self.delay.setAlignment(Qt.AlignCenter)
+        self.delay.setMaximumWidth(80)
+        layout.addWidget(self.delay)
+
         return layout
+
+    def update_height(self, value):
+        self.height.setText(f'{value}')
+        self.generate_gif()
+
+    def update_delay(self, value):
+        self.delay.setText(f'{value}')
+        self.generate_gif()
 
     def add_frame_buttons(self):
         layout = QHBoxLayout()
@@ -139,6 +181,11 @@ class MainWindow(QMainWindow):
         label.setAlignment(Qt.AlignCenter)
         return label
 
+    def adjust_corgo(self):
+        pixmap = QPixmap.fromImage(self.ctx.img_corgo)
+        height = int(self.height.text())
+        self.gif_view.setPixmap(pixmap.scaledToHeight(height))
+
     def add_corgo(self):
         pixmap = QPixmap.fromImage(self.ctx.img_corgo)
         self.gif_view.setPixmap(pixmap.scaledToHeight(384))
@@ -170,13 +217,19 @@ class MainWindow(QMainWindow):
             self.select_frames_layout.addWidget(w)
 
     def generate_gif(self):
-        fp = self.ctx.working_gif
 
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
-        pixmaps = [i.original_pixmap for i in self.layout_children(self.select_frames_layout) if i.highlighted]
-        img, *imgs = [qpixmap_to_pil(i.scaledToHeight(384)) for i in pixmaps]
+        select_frames_labels = self.layout_children(self.select_frames_layout)
+        if not select_frames_labels:
+            self.adjust_corgo()
+            return
+        pixmaps = [i.original_pixmap for i in select_frames_labels if i.highlighted]
+        height = int(self.height.text())
+        img, *imgs = [qpixmap_to_pil(i.scaledToHeight(height)) for i in pixmaps]
 
-        img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=320, loop=0)
+        fp = self.ctx.working_gif
+        delay = int(self.delay.text())
+        img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
         gif = QMovie(fp)
         self.gif_view.setMovie(gif)
         gif.start()
