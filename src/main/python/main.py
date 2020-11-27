@@ -10,6 +10,9 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxL
 from cv2 import CAP_PROP_POS_MSEC, VideoCapture
 from fbs_runtime.application_context.PyQt5 import ApplicationContext, cached_property
 
+DEFAULT_GIF_HEIGHT = 384
+DEFAULT_VIDEO_READ_INTERVAL = 500
+
 
 class AppContext(ApplicationContext):           # 1. Subclass ApplicationContext
     def run(self):                              # 2. Implement run()
@@ -104,12 +107,12 @@ class MainWindow(QMainWindow):
 
         sld = QSlider(Qt.Horizontal, self)
         sld.setRange(128, 1024)
-        sld.setValue(384)
+        sld.setValue(DEFAULT_GIF_HEIGHT)
         sld.setMaximumWidth(160)
         sld.valueChanged.connect(self.update_height)
         layout.addWidget(sld)
 
-        self.height = QLabel('384', self)
+        self.height = QLabel(str(DEFAULT_GIF_HEIGHT), self)
         self.height.setAlignment(Qt.AlignCenter)
         self.height.setMaximumWidth(80)
         layout.addWidget(self.height)
@@ -152,7 +155,27 @@ class MainWindow(QMainWindow):
         self.btn_add.clicked.connect(self.add_frames)
         layout.addWidget(self.btn_add)
 
+        delay = QLabel('Read Interval', self)
+        delay.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        delay.setMaximumWidth(100)
+        layout.addWidget(delay)
+
+        sld = QSlider(Qt.Horizontal, self)
+        sld.setRange(100, 2000)
+        sld.setValue(DEFAULT_VIDEO_READ_INTERVAL)
+        sld.setMaximumWidth(160)
+        sld.valueChanged.connect(self.update_read)
+        layout.addWidget(sld)
+
+        self.read = QLabel(str(DEFAULT_VIDEO_READ_INTERVAL), self)
+        self.read.setAlignment(Qt.AlignCenter)
+        self.read.setMaximumWidth(80)
+        layout.addWidget(self.read)
+
         return layout
+
+    def update_read(self, value):
+        self.read.setText(f'{value}')
 
     def add_video_frames_area(self):
         scroll = QScrollArea()
@@ -188,7 +211,7 @@ class MainWindow(QMainWindow):
 
     def add_corgo(self):
         pixmap = QPixmap.fromImage(self.ctx.img_corgo)
-        self.gif_view.setPixmap(pixmap.scaledToHeight(384))
+        self.gif_view.setPixmap(pixmap.scaledToHeight(DEFAULT_GIF_HEIGHT))
 
     def add_shortcuts(self):
         self.quit_sc = QShortcut(QKeySequence('Ctrl+W'), self)
@@ -204,7 +227,7 @@ class MainWindow(QMainWindow):
 
         if dlg.exec_():
             file_name = dlg.selectedFiles()[0]
-            images = extract_images(file_name)
+            images = self.extract_images(file_name)
             for image in images:
                 pixmap = QPixmap.fromImage(image)
                 picture = LabelVideoFrame(pixmap, self)
@@ -253,6 +276,20 @@ class MainWindow(QMainWindow):
         cnt = layout.count()
         return [layout.itemAt(i).widget() for i in range(cnt)]
 
+    def extract_images(self, pathIn):
+        images = []
+        count = 0
+        vidcap = VideoCapture(pathIn)
+        success = True
+        while success:
+            vidcap.set(CAP_PROP_POS_MSEC, count * int(self.read.text()))
+            success, image = vidcap.read()
+            if image is None:
+                return images
+            images.append(cv_image_to_qimage(image))
+            count = count + 1
+        return images
+
 
 class LabelVideoFrame(QLabel):
     pictureClicked = pyqtSignal(str)  # Can be other types (list, dict, object etc.)
@@ -288,21 +325,6 @@ class LabelSelected(LabelVideoFrame):
     @property
     def initial_style(self):
         return self.STYLE_HIGHLIGHTED
-
-
-def extract_images(pathIn):
-    images = []
-    count = 0
-    vidcap = VideoCapture(pathIn)
-    success = True
-    while success:
-        vidcap.set(CAP_PROP_POS_MSEC, count * 1000)
-        success, image = vidcap.read()
-        if image is None:
-            return images
-        images.append(cv_image_to_qimage(image))
-        count = count + 1
-    return images
 
 
 def cv_image_to_qimage(cv_img):
