@@ -92,47 +92,21 @@ class MainWindow(QMainWindow):
     def add_gif_buttons(self):
         layout = QHBoxLayout()
 
-        self.btn_generate = QPushButton("Generate GIF")
-        self.btn_generate.clicked.connect(self.generate_gif)
-        layout.addWidget(self.btn_generate)
+        self.btn_stop = form_button('Generate GIF', self.generate_gif, layout)
 
-        self.btn_remove = QPushButton("Remove Unselected")
-        self.btn_remove.clicked.connect(self.remove_unselected)
-        layout.addWidget(self.btn_remove)
+        self.btn_stop = form_button('Stop', self.stop, layout)
 
-        height = QLabel('Height', self)
-        height.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        height.setMaximumWidth(60)
-        layout.addWidget(height)
+        self.btn_remove = form_button('Remove Unselected', self.remove_unselected, layout)
 
-        sld = QSlider(Qt.Horizontal, self)
-        sld.setRange(128, 1024)
-        sld.setValue(DEFAULT_GIF_HEIGHT)
-        sld.setMaximumWidth(160)
-        sld.valueChanged.connect(self.update_height)
-        layout.addWidget(sld)
+        self.height = form_slider(
+            text='Height', function=self.update_height, layout=layout,
+            range1=128, range2=1024, default=DEFAULT_GIF_HEIGHT
+        )
 
-        self.height = QLabel(str(DEFAULT_GIF_HEIGHT), self)
-        self.height.setAlignment(Qt.AlignCenter)
-        self.height.setMaximumWidth(80)
-        layout.addWidget(self.height)
-
-        delay = QLabel('Delay', self)
-        delay.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        delay.setMaximumWidth(60)
-        layout.addWidget(delay)
-
-        sld = QSlider(Qt.Horizontal, self)
-        sld.setRange(100, 1000)
-        sld.setValue(200)
-        sld.setMaximumWidth(160)
-        sld.valueChanged.connect(self.update_delay)
-        layout.addWidget(sld)
-
-        self.delay = QLabel('200', self)
-        self.delay.setAlignment(Qt.AlignCenter)
-        self.delay.setMaximumWidth(80)
-        layout.addWidget(self.delay)
+        self.delay = form_slider(
+            text='Delay', function=self.update_delay, layout=layout,
+            range1=100, range2=1000, default=200
+        )
 
         return layout
 
@@ -147,30 +121,14 @@ class MainWindow(QMainWindow):
     def add_frame_buttons(self):
         layout = QHBoxLayout()
 
-        self.btn = QPushButton("Select Source")
-        self.btn.clicked.connect(self.get_files)
-        layout.addWidget(self.btn)
+        self.btn = form_button('Select Source', self.get_files, layout)
 
-        self.btn_add = QPushButton("Add Frames")
-        self.btn_add.clicked.connect(self.add_frames)
-        layout.addWidget(self.btn_add)
+        self.btn_add = form_button('Add Frames', self.add_frames, layout)
 
-        delay = QLabel('Read Interval', self)
-        delay.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        delay.setMaximumWidth(100)
-        layout.addWidget(delay)
-
-        sld = QSlider(Qt.Horizontal, self)
-        sld.setRange(100, 2000)
-        sld.setValue(DEFAULT_VIDEO_READ_INTERVAL)
-        sld.setMaximumWidth(160)
-        sld.valueChanged.connect(self.update_read)
-        layout.addWidget(sld)
-
-        self.read = QLabel(str(DEFAULT_VIDEO_READ_INTERVAL), self)
-        self.read.setAlignment(Qt.AlignCenter)
-        self.read.setMaximumWidth(80)
-        layout.addWidget(self.read)
+        self.read = form_slider(
+            text='Read', function=self.update_read, layout=layout,
+            range1=100, range2=2000, default=DEFAULT_VIDEO_READ_INTERVAL
+        )
 
         return layout
 
@@ -239,8 +197,10 @@ class MainWindow(QMainWindow):
         for w in widgets:
             self.select_frames_layout.addWidget(w)
 
-    def generate_gif(self):
+    def stop(self):
+        self.gif_view.movie().stop()
 
+    def generate_gif(self):
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
         select_frames_labels = self.layout_children(self.select_frames_layout)
         if not select_frames_labels:
@@ -341,6 +301,32 @@ def qpixmap_to_pil(qpixmap):
     pil_im = Image.open(io.BytesIO(buffer.data()))
     return pil_im
 
+
+def form_button(text, function, layout):
+    btn = QPushButton(text)
+    btn.clicked.connect(function)
+    layout.addWidget(btn)
+    return btn
+
+
+def form_slider(text, function, layout, range1, range2, default):
+    height = QLabel(text)
+    height.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+    height.setMaximumWidth(60)
+    layout.addWidget(height)
+
+    sld = QSlider(Qt.Horizontal)
+    sld.setRange(range1, range2)
+    sld.setValue(DEFAULT_GIF_HEIGHT)
+    sld.setMaximumWidth(160)
+    sld.valueChanged.connect(function)
+    layout.addWidget(sld)
+
+    value = QLabel(str(default))
+    value.setAlignment(Qt.AlignCenter)
+    value.setMaximumWidth(80)
+    layout.addWidget(value)
+    return value
 
 if __name__ == '__main__':
     appctxt = AppContext()                      # 4. Instantiate the subclass
