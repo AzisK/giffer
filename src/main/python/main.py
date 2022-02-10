@@ -3,7 +3,7 @@ import sys
 from shutil import copyfile
 
 from PIL import Image
-from PyQt5.QtCore import pyqtSignal, QBuffer, Qt
+from PyQt5.QtCore import pyqtSignal, QBuffer, Qt, QByteArray
 from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxLayout, QPushButton, QVBoxLayout, \
     QWidget, QFileDialog, QScrollArea, QAction, QToolBar, QSlider
@@ -210,10 +210,14 @@ class MainWindow(QMainWindow):
         height = int(self.height.text())
         img, *imgs = [qpixmap_to_pil(i.scaledToHeight(height)) for i in pixmaps]
 
-        fp = self.ctx.working_gif
         delay = int(self.delay.text())
-        img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
-        gif = QMovie(fp)
+
+        bytesio = io.BytesIO()
+        img.save(fp=bytesio, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
+
+        buffer = QBuffer(QByteArray(bytesio.getvalue()))
+        gif = QMovie()
+        gif.setDevice(buffer)
         self.gif_view.setMovie(gif)
         gif.start()
 
