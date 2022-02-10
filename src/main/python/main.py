@@ -328,6 +328,7 @@ def form_slider(text, function, layout, range1, range2, default):
     layout.addWidget(value)
     return value
 
+
 if __name__ == '__main__':
     appctxt = AppContext()                      # 4. Instantiate the subclass
     exit_code = appctxt.run()                   # 5. Invoke run()
