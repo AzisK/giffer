@@ -1,9 +1,8 @@
 import io
 import sys
-from shutil import copyfile
 
 from PIL import Image
-from PyQt5.QtCore import pyqtSignal, QBuffer, Qt
+from PyQt5.QtCore import pyqtSignal, QBuffer, Qt, QByteArray, QIODevice
 from PyQt5.QtGui import QPixmap, QImage, QKeySequence, QMovie, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QShortcut, QHBoxLayout, QPushButton, QVBoxLayout, \
     QWidget, QFileDialog, QScrollArea, QAction, QToolBar, QSlider
@@ -12,6 +11,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext, cached_pro
 
 DEFAULT_GIF_HEIGHT = 384
 DEFAULT_VIDEO_READ_INTERVAL = 500
+DEFAULT_DELAY = 700
 
 
 class AppContext(ApplicationContext):           # 1. Subclass ApplicationContext
@@ -31,10 +31,6 @@ class AppContext(ApplicationContext):           # 1. Subclass ApplicationContext
     def save_png(self):
         return self.get_resource('images/Save.png')
 
-    @cached_property
-    def working_gif(self):
-        return self.get_resource('work/working_gif.gif')
-
 
 class MainWindow(QMainWindow):
     def __init__(self, ctx):
@@ -50,7 +46,8 @@ class MainWindow(QMainWindow):
         name = QFileDialog.getSaveFileName(self, 'Save File')[0]
         if name:
             name = name + '.gif' if not name.endswith('.gif') else name
-            copyfile(self.ctx.working_gif, name)
+            with open(name, 'wb') as binary_file:
+                binary_file.write(self.gif_qbytearray)
 
     def init_ui(self):
         self.add_shortcuts()
@@ -105,7 +102,7 @@ class MainWindow(QMainWindow):
 
         self.delay = form_slider(
             text='Delay', function=self.update_delay, layout=layout,
-            range1=100, range2=1000, default=200
+            range1=200, range2=2000, default=DEFAULT_DELAY
         )
 
         return layout
@@ -210,10 +207,20 @@ class MainWindow(QMainWindow):
         height = int(self.height.text())
         img, *imgs = [qpixmap_to_pil(i.scaledToHeight(height)) for i in pixmaps]
 
-        fp = self.ctx.working_gif
         delay = int(self.delay.text())
-        img.save(fp=fp, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
-        gif = QMovie(fp)
+
+        bytesio = io.BytesIO()
+        img.save(fp=bytesio, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
+        self.gif_qbytearray = QByteArray(bytesio.getvalue())
+        bytesio.close()
+        self.gif_buffer = QBuffer(self.gif_qbytearray)
+        self.gif_buffer.open(QIODevice.ReadOnly)
+
+        gif = QMovie()
+        gif.setDevice(self.gif_buffer)
+        gif.setCacheMode(QMovie.CacheAll)
+        print(f'Movie isValid() {gif.isValid()}')
+
         self.gif_view.setMovie(gif)
         gif.start()
 
