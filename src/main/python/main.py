@@ -1,5 +1,6 @@
 import io
 import sys
+from typing import List
 
 from PIL import Image
 from PyQt5.QtCore import pyqtSignal, QBuffer, Qt, QByteArray, QIODevice
@@ -198,6 +199,9 @@ class MainWindow(QMainWindow):
         self.gif_view.movie().stop()
 
     def generate_gif(self):
+        img: Image
+        imgs: List[Image]
+
         # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#gif
         select_frames_labels = self.layout_children(self.select_frames_layout)
         if not select_frames_labels:
@@ -301,7 +305,7 @@ def cv_image_to_qimage(cv_img):
     return q_img
 
 
-def qpixmap_to_pil(qpixmap):
+def qpixmap_to_pil(qpixmap) -> Image:
     buffer = QBuffer()
     buffer.open(QBuffer.ReadWrite)
     qpixmap.save(buffer, "PNG")
