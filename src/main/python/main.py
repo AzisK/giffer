@@ -217,10 +217,10 @@ class MainWindow(QMainWindow):
         img.save(fp=bytesio, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
         self.gif_qbytearray = QByteArray(bytesio.getvalue())
         bytesio.close()
-        self.gif_buffer = QBuffer(self.gif_qbytearray)
+        self.gif_qbuffer = QBuffer(self.gif_qbytearray)
 
         gif = QMovie()
-        gif.setDevice(self.gif_buffer)
+        gif.setDevice(self.gif_qbuffer)
         gif.setCacheMode(QMovie.CacheAll)
         print(f'Movie isValid() {gif.isValid()}')
 
