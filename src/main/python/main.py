@@ -215,9 +215,9 @@ class MainWindow(QMainWindow):
         bytesio = io.BytesIO()
         img.save(fp=bytesio, format='GIF', append_images=imgs, save_all=True, duration=delay, loop=0)
 
-        buffer = QBuffer(QByteArray(bytesio.getvalue()))
+        qbuffer = QBuffer(QByteArray(bytesio.getvalue()))
         gif = QMovie()
-        gif.setDevice(buffer)
+        gif.setDevice(qbuffer)
         self.gif_view.setMovie(gif)
         gif.start()
 
