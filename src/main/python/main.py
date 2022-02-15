@@ -218,7 +218,6 @@ class MainWindow(QMainWindow):
         self.gif_qbytearray = QByteArray(bytesio.getvalue())
         bytesio.close()
         self.gif_buffer = QBuffer(self.gif_qbytearray)
-        self.gif_buffer.open(QIODevice.ReadOnly)
 
         gif = QMovie()
         gif.setDevice(self.gif_buffer)
